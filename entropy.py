@@ -10,8 +10,6 @@ class EntropyEstimator:
     def get_fractions(array: npt.NDArray[Any]) -> dict:
         uniques, counts = np.unique(array, return_counts=True)
         fractions = dict(zip(uniques, counts / len(array)))
-        # ocurrences = dict(zip(unique, counts))
-        # result = {k:v for k, v in occurences.items() if 0<k<17}
         return fractions
 
     def estimate_shannon_entropy(self, dataset: npt.NDArray[Any]) -> float:
