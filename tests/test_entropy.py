@@ -43,12 +43,12 @@ class TestEntropy:
         assert fractions["young"] == 0.2
         assert fractions["old"] == 0.8
 
-    def test_estimate_shannon_entropy_1(self, df):
-        entropy = EntropyEstimator().estimate_shannon_entropy(df["Age"])
+    def test_get_shannon_entropy_1(self, df):
+        entropy = EntropyEstimator().get_shannon_entropy(df["Age"])
 
         assert entropy == 1
 
-    def test_estimate_shannon_entropy_075(self, df):
+    def test_get_shannon_entropy_075(self, df):
         names = ["Tom"] * 100
         ages = ["young"] * 25 + ["old"] * 75
         data = {
@@ -57,6 +57,6 @@ class TestEntropy:
         }
 
         df = pd.DataFrame(data)
-        entropy = EntropyEstimator().estimate_shannon_entropy(df["Age"])
+        entropy = EntropyEstimator().get_shannon_entropy(df["Age"])
 
         assert entropy == 0.81

@@ -1,13 +1,57 @@
-from models import Node
+import pandas as pd
+import pytest
+
 from splitter import Splitter
+from tree import Tree
+
+
+@pytest.fixture(scope="module")
+def df():
+    data = {
+        "favourite_sport": [
+            "cyber",
+            "running",
+            "football",
+            "boxing",
+            "backetball",
+            "bowling",
+            "snowboard",
+            "running",
+            "running",
+            "chess",
+        ],
+        "age": [18, 56, 34, 39, 26, 44, 76, 99, 6, 77],
+        "weight": [90, 74, 70, 30, 57, 70, 200, 65, 5, 66],
+        "healthy": ["no", "yes", "yes", "no", "yes", "yes", "no", "yes", "yes", "no"],
+    }
+
+    return pd.DataFrame(data)
 
 
 class TestSplitter:
-    def test_get_information_gain(self):
+    def test_get_information_gain(self, df):
+        """
         parent = Node(entropy=0.6, example_count=40)
         child_1 = Node(entropy=0.2, example_count=16)
         child_2 = Node(entropy=0.1, example_count=24)
+        """
 
-        information_gain = Splitter().get_information_gain(parent, [child_1, child_2])
+        tree = Tree(df, "healthy")
+        node = tree.root
+        df_left = df.loc[df.weight < 82]
+        df_right = df.loc[df.weight >= 82]
 
-        assert information_gain == 0.46
+        information_gain = Splitter(tree).get_information_gain(
+            node, df_left["healthy"], df_right["healthy"]
+        )
+
+        assert information_gain == 0.12
+
+    def test_find_best_split(self, df):
+        tree = Tree(df, "healthy")
+        node = tree.root
+
+        condition = Splitter(tree).find_best_split(node, df, ["age", "weight"])
+
+        assert condition.feature == "weight"
+        assert condition.threshold == 82
