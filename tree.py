@@ -56,7 +56,7 @@ class Tree:
         self.grow(left_child, df_left, features)
         self.grow(right_child, df_left, features)
 
-    def predict_datapoint_label(self, datapoint: pd.core.series.Series) -> dict:
+    def predict(self, datapoint: pd.core.series.Series) -> dict:
         node = self.root
         while node.condition:
             if datapoint[node.condition.feature] < node.condition.threshold:
@@ -65,3 +65,8 @@ class Tree:
                 node = node.right_child
 
         return node.predictions
+
+    def predict_label(self, datapoint: pd.core.series.Series):
+        predictions = self.predict(datapoint)
+        max_prob_label = max(predictions, key=lambda x: predictions[x])
+        return max_prob_label

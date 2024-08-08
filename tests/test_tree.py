@@ -16,6 +16,6 @@ class TestTree:
         node = tree.root
         tree.grow(node, df, ["age", "weight"])
 
-        predictions = tree.predict_datapoint_label(df.loc[0])
+        label = tree.predict_label(df.loc[0])
 
-        assert predictions["yes"]
+        assert label == "yes"
