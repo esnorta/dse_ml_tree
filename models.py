@@ -11,6 +11,7 @@ class ConditionType(Enum):
 @dataclass
 class Condition:
     type: ConditionType
+    information_gain: float
     feature: Optional[str] = None
     threshold: Optional[str] = None
     set: Optional[List[str]] = None
@@ -24,4 +25,4 @@ class Node:
     label: Optional[str] = None
     left_child: Optional[Self] = None
     right_child: Optional[Self] = None
-    parent: Optional[Self] = None
+    predictions: Optional[dict] = None
