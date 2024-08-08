@@ -29,10 +29,8 @@ class Tree:
 
     def grow(self, node: Node, df: pd.DataFrame, features: List[str]) -> None:
         condition = Splitter(self.target_feature).find_best_split(node, df, features)
-        print(condition.information_gain)
 
         if condition.information_gain < self.min_information_gain:
-            print("Growing stopped")
             node.predictions = self.get_leaf_label_probabilities(
                 df[self.target_feature]
             )

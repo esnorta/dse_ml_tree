@@ -50,6 +50,16 @@ class TestSplitter:
         assert condition.feature == "weight"
         assert condition.threshold == 82
 
+    def test_find_best_split_categorical(self, df):
+        tree = Tree(df, "healthy")
+        node = tree.root
+
+        condition = Splitter("healthy").find_best_split(node, df, ["favourite_sport"])
+
+        assert condition.type == "IN_SET"
+        assert condition.in_set == ["cyber", "boxing", "snowboard"]
+        assert condition.information_gain == 0.26
+
     def test_train_test_split(self, df):
         df_train, df_test = Splitter().train_test_split(df, 0.6, 1)
 

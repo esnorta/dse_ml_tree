@@ -1,3 +1,4 @@
+import itertools
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -32,7 +33,7 @@ class Splitter:
         information_gain = parent.entropy - weighted_entropy_sum
         return round(information_gain, 2)
 
-    def perform_feature_splits(
+    def perform_numerical_feature_splits(
         self, df_splits: pd.DataFrame, df: pd.DataFrame, feature: str, parent_node: Node
     ):
         target_feature = self.target_feature
@@ -47,7 +48,30 @@ class Splitter:
                 parent_node, df_left[target_feature], df_right[target_feature]
             )
 
-            row = [feature, value, information_gain]
+            row = ["THRESHOLD", feature, value, None, information_gain]
+            df_splits.loc[len(df_splits)] = row
+
+        return df_splits
+
+    def perform_categorical_feature_splits(
+        self, df_splits: pd.DataFrame, df: pd.DataFrame, feature: str, parent_node: Node
+    ):
+        target_feature = self.target_feature
+        sets = []
+        categories = df[feature].unique()
+        for i in range(len(categories) + 1):
+            for subset in itertools.combinations(categories, i):
+                subset = list(subset)
+                sets.append(subset)
+
+        for cat_set in sets:
+            df_left = df.loc[df[feature].isin(cat_set)]
+            df_right = df.loc[~df[feature].isin(cat_set)]
+            information_gain = self.get_information_gain(
+                parent_node, df_left[target_feature], df_right[target_feature]
+            )
+
+            row = ["IN_SET", feature, None, cat_set, information_gain]
             df_splits.loc[len(df_splits)] = row
 
         return df_splits
@@ -58,17 +82,35 @@ class Splitter:
         df: pd.DataFrame,
         features: List[str],
     ) -> Condition:
-        df_splits = pd.DataFrame(columns=["feature", "threshold", "information_gain"])
+        df_splits = pd.DataFrame(
+            columns=["type", "feature", "threshold", "in_set", "information_gain"]
+        )
         for feature in features:
-            df_splits = self.perform_feature_splits(df_splits, df, feature, parent_node)
+            is_numeric = pd.api.types.is_numeric_dtype(df[feature])
+            if is_numeric:
+                df_splits = self.perform_numerical_feature_splits(
+                    df_splits, df, feature, parent_node
+                )
+            else:
+                df_splits = self.perform_categorical_feature_splits(
+                    df_splits, df, feature, parent_node
+                )
 
         best_split = df_splits.loc[df_splits["information_gain"].idxmax()]
-        condition = Condition(
-            type="THRESHOLD",
-            information_gain=best_split["information_gain"],
-            feature=best_split["feature"],
-            threshold=best_split["threshold"],
-        )
+        if best_split["type"] == "THRESHOLD":
+            condition = Condition(
+                type="THRESHOLD",
+                information_gain=best_split["information_gain"],
+                feature=best_split["feature"],
+                threshold=best_split["threshold"],
+            )
+        else:
+            condition = Condition(
+                type="IN_SET",
+                information_gain=best_split["information_gain"],
+                feature=best_split["feature"],
+                in_set=best_split["in_set"],
+            )
 
         return condition
 

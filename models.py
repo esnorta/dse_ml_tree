@@ -14,7 +14,7 @@ class Condition:
     information_gain: float
     feature: Optional[str] = None
     threshold: Optional[str] = None
-    set: Optional[List[str]] = None
+    in_set: Optional[List[str]] = None
 
 
 @dataclass
