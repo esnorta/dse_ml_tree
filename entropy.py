@@ -19,7 +19,7 @@ class EntropyEstimator:
             raise Exception("More thatn 2 values found in numpy array")
         values = list(fractions.values())
 
-        if len(values) == 1:
+        if len(values) <= 1:
             return 1
 
         p = values[0]

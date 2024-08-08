@@ -56,10 +56,12 @@ class Tree:
         self.grow(left_child, df_left, features)
         self.grow(right_child, df_left, features)
 
-    def predict_datapoint_label(self, datapoint: pd.core.series.Series):
+    def predict_datapoint_label(self, datapoint: pd.core.series.Series) -> dict:
         node = self.root
         while node.condition:
-            if datapoint[node.condition.feature] < node.threshold:
+            if datapoint[node.condition.feature] < node.condition.threshold:
                 node = node.left_child
-            if datapoint[node.condition.feature] >= node.threshold:
+            elif datapoint[node.condition.feature] >= node.condition.threshold:
                 node = node.right_child
+
+        return node.predictions
