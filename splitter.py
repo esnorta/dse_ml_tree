@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -9,8 +9,9 @@ from models import Condition, Node
 
 
 class Splitter:
-    def __init__(self, tree):
-        self.tree = tree
+    def __init__(self, target_feature: Optional[str] = None):
+        if target_feature:
+            self.target_feature = target_feature
 
     @staticmethod
     def get_weighted_entropy_sum(arrays: List[npt.NDArray]) -> Optional[float]:
@@ -34,7 +35,7 @@ class Splitter:
     def perform_feature_splits(
         self, df_splits: pd.DataFrame, df: pd.DataFrame, feature: str, parent_node: Node
     ):
-        target_feature = self.tree.target_feature
+        target_feature = self.target_feature
         values = df[feature].sort_values().unique()
 
         values = np.convolve(values, [0.5, 0.5], "valid")
@@ -70,3 +71,27 @@ class Splitter:
         )
 
         return condition
+
+    def train_test_split(
+        self, df: pd.DataFrame, train_size: float = 0.7, random_state: int = 7
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        # Get number of samples
+        n_samples = df.shape[0]
+
+        # Set the seed for the random number generator
+        np.random.seed(random_state)
+
+        # Shuffle the indices
+        shuffled_indices = np.random.permutation(np.arange(n_samples))
+
+        # Determine the size of the test set
+        test_size = int(n_samples * (1 - train_size))
+
+        # Split the indices into test and train
+        test_indices = shuffled_indices[:test_size]
+        train_indices = shuffled_indices[test_size:]
+
+        df_train = df.loc[train_indices]
+        df_test = df.loc[test_indices]
+
+        return df_train, df_test

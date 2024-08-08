@@ -12,11 +12,14 @@ from splitter import Splitter
 class Tree:
     min_information_gain = 0.0004
 
-    def __init__(self, df: pd.DataFrame, target_feature: str):
+    def __init__(
+        self, df: pd.DataFrame, target_feature: str, min_information_gain: float = 0.1
+    ):
         self.root = Node(
             entropy_estimator.get_shannon_entropy(df[target_feature]), len(df)
         )
         self.target_feature = target_feature
+        self.min_information_gain = min_information_gain
         self.nodes = []
 
     def get_leaf_label_probabilities(self, array: npt.NDArray[Any]) -> dict:
@@ -25,7 +28,7 @@ class Tree:
         return fractions
 
     def grow(self, node: Node, df: pd.DataFrame, features: List[str]) -> None:
-        condition = Splitter(self).find_best_split(node, df, features)
+        condition = Splitter(self.target_feature).find_best_split(node, df, features)
         print(condition.information_gain)
 
         if condition.information_gain < self.min_information_gain:

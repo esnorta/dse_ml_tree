@@ -35,7 +35,7 @@ class TestSplitter:
         df_left = df.loc[df.weight < 82]
         df_right = df.loc[df.weight >= 82]
 
-        information_gain = Splitter(tree).get_information_gain(
+        information_gain = Splitter("healthy").get_information_gain(
             node, df_left["healthy"], df_right["healthy"]
         )
 
@@ -45,7 +45,14 @@ class TestSplitter:
         tree = Tree(df, "healthy")
         node = tree.root
 
-        condition = Splitter(tree).find_best_split(node, df, ["age", "weight"])
+        condition = Splitter("healthy").find_best_split(node, df, ["age", "weight"])
 
         assert condition.feature == "weight"
         assert condition.threshold == 82
+
+    def test_train_test_split(self, df):
+        df_train, df_test = Splitter().train_test_split(df, 0.6, 1)
+
+        assert len(df) == 10
+        assert len(df_train) == 6
+        assert len(df_test) == 4

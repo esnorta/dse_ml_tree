@@ -26,3 +26,7 @@ class Node:
     left_child: Optional[Self] = None
     right_child: Optional[Self] = None
     predictions: Optional[dict] = None
+
+
+class Tree:
+    pass
