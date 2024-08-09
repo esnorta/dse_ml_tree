@@ -48,7 +48,7 @@ class Splitter:
                 parent_node, df_left[target_feature], df_right[target_feature]
             )
 
-            row = ["THRESHOLD", feature, value, None, information_gain]
+            row = ["THRESHOLD", feature, value, np.nan, information_gain]
             df_splits.loc[len(df_splits)] = row
 
         return df_splits
@@ -71,7 +71,7 @@ class Splitter:
                 parent_node, df_left[target_feature], df_right[target_feature]
             )
 
-            row = ["IN_SET", feature, None, cat_set, information_gain]
+            row = ["IN_SET", feature, np.nan, cat_set, information_gain]
             df_splits.loc[len(df_splits)] = row
 
         return df_splits
@@ -95,7 +95,6 @@ class Splitter:
                 df_splits = self.perform_categorical_feature_splits(
                     df_splits, df, feature, parent_node
                 )
-
         best_split = df_splits.loc[df_splits["information_gain"].idxmax()]
         if best_split["type"] == "THRESHOLD":
             condition = Condition(

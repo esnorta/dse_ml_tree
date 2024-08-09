@@ -31,9 +31,8 @@ class Tree:
         condition = Splitter(self.target_feature).find_best_split(node, df, features)
 
         if condition.information_gain < self.min_information_gain:
-            node.predictions = self.get_leaf_label_probabilities(
-                df[self.target_feature]
-            )
+            predictions = self.get_leaf_label_probabilities(df[self.target_feature])
+            node.predictions = predictions
             return
         node.condition = condition
         self.nodes.append(node)
@@ -55,7 +54,7 @@ class Tree:
         node.right_child = right_child
 
         self.grow(left_child, df_left, features)
-        self.grow(right_child, df_left, features)
+        self.grow(right_child, df_right, features)
 
     def predict(self, datapoint: pd.core.series.Series) -> dict:
         node = self.root
