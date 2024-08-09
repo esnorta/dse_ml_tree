@@ -41,7 +41,7 @@ class TestSplitter:
 
         assert information_gain == 0.12
 
-    def test_find_best_split(self, df):
+    def test_find_best_split_numerical(self, df):
         tree = Tree(df, "healthy")
         node = tree.root
 
@@ -57,6 +57,17 @@ class TestSplitter:
         condition = Splitter("healthy").find_best_split(node, df, ["favourite_sport"])
 
         assert condition.type == "IN_SET"
+        assert condition.in_set == ["cyber", "boxing", "snowboard"]
+        assert condition.information_gain == 0.26
+
+    def test_find_best_split(self, df):
+        tree = Tree(df, "healthy")
+        node = tree.root
+
+        condition = Splitter("healthy").find_best_split(
+            node, df, ["age", "weight", "favourite_sport"]
+        )
+
         assert condition.in_set == ["cyber", "boxing", "snowboard"]
         assert condition.information_gain == 0.26
 
