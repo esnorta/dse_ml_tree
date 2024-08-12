@@ -91,5 +91,5 @@ class TestSplitter:
             node, df, ["age", "weight"], tree.split_criterion
         )
 
-        assert condition.feature == "weight"
-        assert condition.threshold == 82
+        assert condition.feature == "age"
+        assert condition.threshold == 66

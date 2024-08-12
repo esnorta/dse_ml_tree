@@ -10,6 +10,6 @@ class TestGiniImpurityEstimator:
         }
 
         df = pd.DataFrame(data)
-        impurity = gini_impurity_estimator._get_gini_impurity(df["Age"])
+        impurity = gini_impurity_estimator.get_gini_impurity(df["Age"])
 
         assert impurity == 0.375
