@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, get_args
 
 import numpy as np
 import numpy.typing as npt
@@ -23,6 +23,9 @@ class Tree:
         self.target_feature = target_feature
         self.min_gain = min_gain
         self.split_criterion = split_criterion
+        if split_criterion not in get_args(SPLIT_CRITERIA):
+            raise Exception(f"Invalid split criterion: {split_criterion}")
+
         self.nodes = []
 
     def get_leaf_label_probabilities(self, array: npt.NDArray[Any]) -> dict:

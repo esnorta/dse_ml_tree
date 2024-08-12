@@ -24,3 +24,12 @@ class TestTree:
         label = tree.predict_label(df.loc[0])
 
         assert label == "no"
+
+    def test_predict_gini(self, df):
+        tree = Tree(df, "healthy", "GINI")
+        node = tree.root
+        tree.grow(node, df, ["age", "weight"])
+
+        label = tree.predict_label(df.loc[0])
+
+        assert label == "yes"
