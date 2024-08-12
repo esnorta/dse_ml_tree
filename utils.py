@@ -1,10 +1,10 @@
-from typing import Any, Tuple
+from typing import Tuple
 
 import numpy as np
-import numpy.typing as npt
+import pandas as pd
 
 
-def get_fractions(array: npt.NDArray[Any]) -> Tuple[float, float]:
+def get_fractions(array: pd.DataFrame) -> Tuple[float, float]:
     uniques, counts = np.unique(array, return_counts=True)
     fractions = dict(zip(uniques, counts / len(array)))
 

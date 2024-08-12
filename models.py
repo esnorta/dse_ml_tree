@@ -27,6 +27,7 @@ class Node:
     right_child: Optional[Self] = None
     predictions: Optional[dict] = None
     gini_impurity: Optional[float] = None
+    scaled_impurity: Optional[float] = None
 
 
 class Tree:

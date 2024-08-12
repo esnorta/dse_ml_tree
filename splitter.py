@@ -6,7 +6,7 @@ import numpy.typing as npt
 import pandas as pd
 from const import SPLIT_CRITERIA
 from entropy import entropy_estimator
-from gini import gini_impurity_estimator
+from impurity import gini_impurity_estimator, scaled_impurity_estimator
 from models import Condition, Node
 
 
@@ -54,6 +54,19 @@ class Splitter:
                 if not weighted_impurity_sum or not parent.gini_impurity:
                     return 0
                 gain = parent.gini_impurity - weighted_impurity_sum
+            case "SCALED_IMPURITY":
+                all = np.append(array_right, array_left)
+                parent.scaled_impurity = scaled_impurity_estimator.get_scaled_impurity(
+                    all
+                )
+                weighted_impurity_sum = (
+                    scaled_impurity_estimator.get_weighted_impurity_sum(
+                        [array_left, array_right]
+                    )
+                )
+                if not weighted_impurity_sum or not parent.gini_impurity:
+                    return 0
+                gain = parent.scaled_impurity - weighted_impurity_sum
         return round(gain, 2)
 
     def _perform_numerical_feature_splits(
