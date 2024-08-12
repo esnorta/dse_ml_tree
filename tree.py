@@ -3,23 +3,26 @@ from typing import Any, List
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-
+from const import SPLIT_CRITERIA
 from entropy import entropy_estimator
 from models import Node
 from splitter import Splitter
 
 
 class Tree:
-    min_information_gain = 0.0004
-
     def __init__(
-        self, df: pd.DataFrame, target_feature: str, min_information_gain: float = 0.1
+        self,
+        df: pd.DataFrame,
+        target_feature: str,
+        split_criterion: SPLIT_CRITERIA,
+        min_gain: float = 0.1,
     ):
         self.root = Node(
             entropy_estimator.get_shannon_entropy(df[target_feature]), len(df)
         )
         self.target_feature = target_feature
-        self.min_information_gain = min_information_gain
+        self.min_gain = min_gain
+        self.split_criterion = split_criterion
         self.nodes = []
 
     def get_leaf_label_probabilities(self, array: npt.NDArray[Any]) -> dict:
@@ -27,10 +30,17 @@ class Tree:
         fractions = dict(zip(uniques, counts / len(array)))
         return fractions
 
-    def grow(self, node: Node, df: pd.DataFrame, features: List[str]) -> None:
-        condition = Splitter(self.target_feature).find_best_split(node, df, features)
+    def grow(
+        self,
+        node: Node,
+        df: pd.DataFrame,
+        features: List[str],
+    ) -> None:
+        condition = Splitter(self.target_feature).find_best_split(
+            node, df, features, self.split_criterion
+        )
 
-        if condition.information_gain < self.min_information_gain:
+        if condition.gain < self.min_gain:
             predictions = self.get_leaf_label_probabilities(df[self.target_feature])
             node.predictions = predictions
             return
@@ -58,6 +68,8 @@ class Tree:
 
     def predict(self, datapoint: pd.core.series.Series) -> dict:
         node = self.root
+        if not node:
+            raise Exception("Root node has not been initialised")
         while node.condition:
             if datapoint[node.condition.feature] < node.condition.threshold:
                 node = node.left_child

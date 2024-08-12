@@ -1,10 +1,11 @@
 import itertools
+from re import split
 from typing import List, Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-
+from const import SPLIT_CRITERIA
 from entropy import entropy_estimator
 from models import Condition, Node
 
@@ -25,16 +26,34 @@ class Splitter:
 
         return weighted_entropy_sum
 
-    def get_information_gain(
-        self, parent: Node, array_left: npt.NDArray, array_right: npt.NDArray
+    def _get_gain(
+        self,
+        parent: Node,
+        array_left: npt.NDArray,
+        array_right: npt.NDArray,
+        split_criterion: SPLIT_CRITERIA,
     ) -> float:
-        weighted_entropy_sum = self.get_weighted_entropy_sum([array_left, array_right])
+        gain = 0
 
-        information_gain = parent.entropy - weighted_entropy_sum
-        return round(information_gain, 2)
+        match split_criterion:
+            case "ENTROPY":
+                weighted_entropy_sum = self.get_weighted_entropy_sum(
+                    [array_left, array_right]
+                )
+                if not weighted_entropy_sum or not parent.entropy:
+                    return 0
+                gain = parent.entropy - weighted_entropy_sum
+            case "GINI":
+                raise Exception("GINI not implemented")
+        return round(gain, 2)
 
-    def perform_numerical_feature_splits(
-        self, df_splits: pd.DataFrame, df: pd.DataFrame, feature: str, parent_node: Node
+    def _perform_numerical_feature_splits(
+        self,
+        df_splits: pd.DataFrame,
+        df: pd.DataFrame,
+        feature: str,
+        parent_node: Node,
+        split_criterion: SPLIT_CRITERIA,
     ):
         target_feature = self.target_feature
         values = df[feature].sort_values().unique()
@@ -44,17 +63,25 @@ class Splitter:
         for value in values:
             df_left = df.loc[df[feature] < value]
             df_right = df.loc[df[feature] >= value]
-            information_gain = self.get_information_gain(
-                parent_node, df_left[target_feature], df_right[target_feature]
+            gain = self._get_gain(
+                parent_node,
+                df_left[target_feature],
+                df_right[target_feature],
+                split_criterion,
             )
 
-            row = ["THRESHOLD", feature, value, np.nan, information_gain]
+            row = ["THRESHOLD", feature, value, np.nan, gain]
             df_splits.loc[len(df_splits)] = row
 
         return df_splits
 
-    def perform_categorical_feature_splits(
-        self, df_splits: pd.DataFrame, df: pd.DataFrame, feature: str, parent_node: Node
+    def _perform_categorical_feature_splits(
+        self,
+        df_splits: pd.DataFrame,
+        df: pd.DataFrame,
+        feature: str,
+        parent_node: Node,
+        split_criterion: SPLIT_CRITERIA,
     ):
         target_feature = self.target_feature
         sets = []
@@ -67,11 +94,14 @@ class Splitter:
         for cat_set in sets:
             df_left = df.loc[df[feature].isin(cat_set)]
             df_right = df.loc[~df[feature].isin(cat_set)]
-            information_gain = self.get_information_gain(
-                parent_node, df_left[target_feature], df_right[target_feature]
+            gain = self._get_gain(
+                parent_node,
+                df_left[target_feature],
+                df_right[target_feature],
+                split_criterion,
             )
 
-            row = ["IN_SET", feature, np.nan, cat_set, information_gain]
+            row = ["IN_SET", feature, np.nan, cat_set, gain]
             df_splits.loc[len(df_splits)] = row
 
         return df_splits
@@ -81,32 +111,33 @@ class Splitter:
         parent_node: Node,
         df: pd.DataFrame,
         features: List[str],
+        split_criterion: SPLIT_CRITERIA,
     ) -> Condition:
         df_splits = pd.DataFrame(
-            columns=["type", "feature", "threshold", "in_set", "information_gain"]
+            columns=["type", "feature", "threshold", "in_set", "gain"]
         )
         for feature in features:
             is_numeric = pd.api.types.is_numeric_dtype(df[feature])
             if is_numeric:
-                df_splits = self.perform_numerical_feature_splits(
-                    df_splits, df, feature, parent_node
+                df_splits = self._perform_numerical_feature_splits(
+                    df_splits, df, feature, parent_node, split_criterion
                 )
             else:
-                df_splits = self.perform_categorical_feature_splits(
-                    df_splits, df, feature, parent_node
+                df_splits = self._perform_categorical_feature_splits(
+                    df_splits, df, feature, parent_node, split_criterion
                 )
-        best_split = df_splits.loc[df_splits["information_gain"].idxmax()]
+        best_split = df_splits.loc[df_splits["gain"].idxmax()]
         if best_split["type"] == "THRESHOLD":
             condition = Condition(
                 type="THRESHOLD",
-                information_gain=best_split["information_gain"],
+                gain=best_split["gain"],
                 feature=best_split["feature"],
                 threshold=best_split["threshold"],
             )
         else:
             condition = Condition(
                 type="IN_SET",
-                information_gain=best_split["information_gain"],
+                gain=best_split["gain"],
                 feature=best_split["feature"],
                 in_set=best_split["in_set"],
             )
