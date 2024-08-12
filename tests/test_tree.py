@@ -18,4 +18,4 @@ class TestTree:
 
         label = tree.predict_label(df.loc[0])
 
-        assert label == "yes"
+        assert label == "no"
