@@ -64,7 +64,7 @@ class Splitter:
                         [array_left, array_right]
                     )
                 )
-                if not weighted_impurity_sum or not parent.gini_impurity:
+                if not weighted_impurity_sum or not parent.scaled_impurity:
                     return 0
                 gain = parent.scaled_impurity - weighted_impurity_sum
         return round(gain, 2)

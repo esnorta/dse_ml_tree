@@ -33,7 +33,9 @@ class ScaledImpurityEstimator:
 
         return round(impurity, 3)
 
-    def get_weighted_impurity_sum(self, arrays: List[pd.DataFrame]) -> Optional[float]:
+    def get_weighted_impurity_sum(
+        self, arrays: List[pd.DataFrame] | List[npt.NDArray[Any]]
+    ) -> Optional[float]:
         weighted_impurity_sum = 0
         total_example_count = sum(len(a) for a in arrays)
         for array in arrays:
