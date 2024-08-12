@@ -1,5 +1,4 @@
 import itertools
-from re import split
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -7,6 +6,7 @@ import numpy.typing as npt
 import pandas as pd
 from const import SPLIT_CRITERIA
 from entropy import entropy_estimator
+from gini import gini_impurity_estimator
 from models import Condition, Node
 
 
@@ -44,7 +44,16 @@ class Splitter:
                     return 0
                 gain = parent.entropy - weighted_entropy_sum
             case "GINI":
-                raise Exception("GINI not implemented")
+                all = np.append(array_right, array_left)
+                parent.gini_impurity = gini_impurity_estimator.get_gini_impurity(all)
+                weighted_impurity_sum = (
+                    gini_impurity_estimator.get_weighted_impurity_sum(
+                        [array_left, array_right]
+                    )
+                )
+                if not weighted_impurity_sum or not parent.gini_impurity:
+                    return 0
+                gain = parent.gini_impurity - weighted_impurity_sum
         return round(gain, 2)
 
     def _perform_numerical_feature_splits(

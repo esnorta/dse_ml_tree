@@ -6,7 +6,7 @@ from utils import get_fractions
 
 class GiniImpurityEstimator:
     @staticmethod
-    def _get_gini_impurity(dataset: npt.NDArray[Any]) -> float:
+    def get_gini_impurity(dataset: npt.NDArray[Any]) -> float:
         p, q = get_fractions(dataset)
         impurity = 1 - (p**2 + q**2)
 
@@ -16,7 +16,7 @@ class GiniImpurityEstimator:
         weighted_impurity_sum = 0
         total_example_count = sum(len(a) for a in arrays)
         for array in arrays:
-            impurity = self._get_gini_impurity(array)
+            impurity = self.get_gini_impurity(array)
             example_count = len(array)
             weighted_impurity_sum += impurity * example_count / total_example_count
 
