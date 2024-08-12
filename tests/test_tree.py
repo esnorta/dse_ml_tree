@@ -33,3 +33,14 @@ class TestTree:
         label = tree.predict_label(df.loc[0])
 
         assert label == "yes"
+
+    def test_max_depth(self, df):
+        tree = Tree(df, "healthy", "ENTROPY", 0.0001, 2)
+        node = tree.root
+        tree.grow(node, df, ["age", "weight"])
+
+        tree_2 = Tree(df, "healthy", "ENTROPY", 0.0001, 1)
+        node = tree.root
+        tree.grow(node, df, ["age", "weight"])
+
+        assert tree.depth > tree_2.depth

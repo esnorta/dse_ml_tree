@@ -16,6 +16,7 @@ class Tree:
         target_feature: str,
         split_criterion: SPLIT_CRITERIA,
         min_gain: float = 0.1,
+        max_depth: int = 40,
     ):
         self.root = Node(
             entropy_estimator.get_shannon_entropy(df[target_feature]), len(df)
@@ -25,8 +26,8 @@ class Tree:
         self.split_criterion = split_criterion
         if split_criterion not in get_args(SPLIT_CRITERIA):
             raise Exception(f"Invalid split criterion: {split_criterion}")
-
-        self.nodes = []
+        self.max_depth = max_depth
+        self.depth = 0
 
     def get_leaf_label_probabilities(self, array: npt.NDArray[Any]) -> dict:
         uniques, counts = np.unique(array, return_counts=True)
@@ -43,12 +44,13 @@ class Tree:
             node, df, features, self.split_criterion
         )
 
+        self.depth += 1
+
         if condition.gain < self.min_gain:
             predictions = self.get_leaf_label_probabilities(df[self.target_feature])
             node.predictions = predictions
             return
         node.condition = condition
-        self.nodes.append(node)
 
         df_left = df.loc[df[condition.feature] < condition.threshold]
         df_right = df.loc[df[condition.feature] >= condition.threshold]
@@ -66,6 +68,8 @@ class Tree:
         node.left_child = left_child
         node.right_child = right_child
 
+        if self.depth + 1 > self.max_depth:
+            return
         self.grow(left_child, df_left, features)
         self.grow(right_child, df_right, features)
 
