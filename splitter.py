@@ -76,7 +76,7 @@ class Splitter:
         feature: str,
         parent_node: Node,
         split_criterion: SPLIT_CRITERIA,
-    ):
+    ) -> pd.DataFrame:
         target_feature = self.target_feature
         values = df[feature].sort_values().unique()
 

@@ -10,6 +10,8 @@ from splitter import Splitter
 
 
 class Tree:
+    min_split_size = 10
+
     def __init__(
         self,
         df: pd.DataFrame,
@@ -34,31 +36,43 @@ class Tree:
         fractions = dict(zip(uniques, counts / len(array)))
         return fractions
 
+    def make_leaf(self, node: Node, df: pd.DataFrame) -> Node:
+        predictions = self.get_leaf_label_probabilities(df[self.target_feature])
+        node.predictions = predictions
+        return node
+
     def grow(
         self,
         node: Node,
         df: pd.DataFrame,
         features: List[str],
     ) -> None:
+        if len(df) < self.min_split_size:
+            self.make_leaf(node, df)
+            return
+
+        if self.depth + 1 > self.max_depth:
+            self.make_leaf(node, df)
+            return
+        self.depth += 1
+
         condition = Splitter(self.target_feature).find_best_split(
             node, df, features, self.split_criterion
         )
-
-        if self.depth + 1 > self.max_depth:
-            predictions = self.get_leaf_label_probabilities(df[self.target_feature])
-            node.predictions = predictions
-            return
-
-        self.depth += 1
-
         if condition.gain < self.min_gain:
-            predictions = self.get_leaf_label_probabilities(df[self.target_feature])
-            node.predictions = predictions
+            self.make_leaf(node, df)
             return
         node.condition = condition
 
-        df_left = df.loc[df[condition.feature] < condition.threshold]
-        df_right = df.loc[df[condition.feature] >= condition.threshold]
+        match condition.type:
+            case "THRESHOLD":
+                df_left = df.loc[df[condition.feature] < condition.threshold]
+                df_right = df.loc[df[condition.feature] >= condition.threshold]
+            case "IN_SET":
+                df_left = df.loc[df[condition.feature].isin(condition.in_set)]
+                df_right = df.loc[~df[condition.feature].isin(condition.in_set)]
+            case _:
+                raise Exception(f"Unknown condition type: {condition.type}")
 
         left_child = Node(
             entropy=entropy_estimator.get_shannon_entropy(df_left[self.target_feature]),
@@ -81,10 +95,17 @@ class Tree:
         if not node:
             raise Exception("Root node has not been initialised")
         while node.condition:
-            if datapoint[node.condition.feature] < node.condition.threshold:
-                node = node.left_child
-            elif datapoint[node.condition.feature] >= node.condition.threshold:
-                node = node.right_child
+            match node.condition.type:
+                case "THRESHOLD":
+                    if datapoint[node.condition.feature] < node.condition.threshold:
+                        node = node.left_child
+                    elif datapoint[node.condition.feature] >= node.condition.threshold:
+                        node = node.right_child
+                case "IN_SET":
+                    if datapoint[node.condition.feature] in node.condition.in_set:
+                        node = node.left_child
+                    elif datapoint[node.condition.feature] not in node.condition.in_set:
+                        node = node.right_child
 
         return node.predictions
 
