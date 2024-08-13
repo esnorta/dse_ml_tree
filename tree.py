@@ -44,6 +44,11 @@ class Tree:
             node, df, features, self.split_criterion
         )
 
+        if self.depth + 1 > self.max_depth:
+            predictions = self.get_leaf_label_probabilities(df[self.target_feature])
+            node.predictions = predictions
+            return
+
         self.depth += 1
 
         if condition.gain < self.min_gain:
@@ -68,8 +73,6 @@ class Tree:
         node.left_child = left_child
         node.right_child = right_child
 
-        if self.depth + 1 > self.max_depth:
-            return
         self.grow(left_child, df_left, features)
         self.grow(right_child, df_right, features)
 
