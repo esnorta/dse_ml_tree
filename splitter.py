@@ -1,5 +1,5 @@
 import itertools
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Any
 
 import numpy as np
 import numpy.typing as npt
@@ -176,7 +176,7 @@ class Splitter:
         np.random.seed(random_state)
 
         # Shuffle the indices
-        shuffled_indices = np.random.permutation(np.arange(n_samples))
+        shuffled_indices = np.random.permutation(np.array(df.index.values))
 
         # Determine the size of the test set
         test_size = int(n_samples * (1 - train_size))
@@ -189,3 +189,14 @@ class Splitter:
         df_test = df.loc[test_indices]
 
         return df_train, df_test
+
+    @staticmethod
+    def generate_k_folds(data: pd.DataFrame, k: int) -> List[Any]:
+        fold_size = len(data) // k
+        indices = np.arange(len(data))
+        indices = np.random.permutation(indices)
+        folds = []
+        for i in range(k):
+            fold_indices = indices[i * fold_size : (i + 1) * fold_size]
+            folds.append(fold_indices)
+        return folds
