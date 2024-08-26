@@ -28,7 +28,10 @@ Evaluator implements estimation of the model performance metrics: accuracy, prec
 - Two split conditions are implemented: Threshold and In-set (membership).
 - On each split a stopping criterion is controlled: minimum gain or maximum depth. If the stopping condition is reached the node is converted to a leaf with target label probabilities.
 
-# Installation
+# Installation and Requirements
+
+Python3.12
+
 `pip3 install -r requirements.txt`
 
 # Usage
