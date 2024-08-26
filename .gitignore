@@ -2,5 +2,6 @@
 .ipynb_checkpoints/
 *.null-ls*
 __pycache__/
-*.ipynb
 data/*
+local/*
+*.csv
