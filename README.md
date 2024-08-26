@@ -4,13 +4,21 @@ Tree predictor fitting and evaluation is performed using the Mushroom dataset.
 
 # Modules Description
 The core code contains several modules responsible for different procedures of tree predictor fitting and evaluation:
+
 - tree.py
+
 The Tree Class implements methods for the construction of the tree and predicting the examples’ labels.
+
 - splitter.py
+
 The Splitter Class is responsible for dataset splitting: finding best split, train/test, k-folds generating.
+
 - entropy.py, impurity.py
+
 Contain classes for entropy and impurity estimation of the data provided.
+
 - evaluator.py
+
 Evaluator implements estimation of the model performance metrics: accuracy, precision and recall.
 
 # Tree Predictor Features
